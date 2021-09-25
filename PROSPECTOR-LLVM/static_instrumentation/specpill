@@ -1,0 +1,88 @@
+#!/bin/bash -x
+#
+# Prospector Instrumentor Linker for LLVM for SPEC benchmarks.
+# aka SPECPILL
+
+######### Setup ENV #########
+
+export LLVMGCC_O=o
+
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+    export SO="so"
+    export O=bc
+elif [[ "$unamestr" == 'Darwin' ]]; then
+    export SO="dylib"
+    export O=bc
+fi
+
+if [ "$#" -lt 2 ]
+then
+    echo "usage: ./chillpill-spec <benchmark name> <all|ref|test|train> <input filename>"
+    exit
+fi
+
+if [ -z "$LLVM_SPEC_DIR" ]
+then
+    echo "Please set location of LLVM_SPEC_DIR."
+    exit
+fi
+
+if [ -z "$SPEC2006_DIR" ]
+then
+    echo "Please set location of SPEC2006_DIR."
+    exit
+fi
+
+
+if [ "$#" -lt 3 ]
+then
+    echo "usage: ./chillpill-spec <benchmark name> <all|ref|test|train> <input filename>"
+    echo ""
+    echo "Choose one of the following for the input filename:"
+    echo ""
+    ls -l $SPEC2006_DIR/speccpu2006/benchspec/CPU2006/$1/data/$2/input
+    exit
+fi
+
+######### Build Instrumented Binary #########
+
+if [ -z "$4" ]
+then
+
+## Builds the profiler:
+make -j5 -C dynamic_profiling
+
+cp $LLVM_SPEC_DIR/External/SPEC/CINT2006/$1/Output/$1.llvm.$O $1.$O
+cp $1.$O $1.native.$O
+
+## Instruments the program to profile:
+opt -loopsimplify -fipp -lipp -mipp < $1.$O > $1.temp.$O && mv $1.temp.$O $1.$O
+
+# Reoptimizes the bitcode:
+opt -inline -O3 < $1.$O > $1.temp.$O && mv $1.temp.$O $1.$O
+opt -inline -O3 < $1.native.$O > $1.native.temp.$O && mv $1.native.temp.$O $1.native.$O
+
+# Links the instrumented program with the profiler:
+llvm-link $1.$O dynamic_profiling/Release+Debug/*.$LLVMGCC_O -o $1.temp.$O && mv $1.temp.$O $1.$O
+
+# Compiles the IR to ASM and Assembles:
+llc $1.$O -o $1.s
+g++ $1.s  -o $1.exe
+
+llc $1.native.$O -o $1.native.s
+g++ $1.native.s  -o $1.native.exe
+
+fi
+
+echo "Running instrumented on $3 input."
+time ./$1.exe $SPEC2006_DIR/speccpu2006/benchspec/CPU2006/$1/data/$2/input/$3
+
+echo "Running native on $3 input."
+time ./$1.native.exe $SPEC2006_DIR/speccpu2006/benchspec/CPU2006/$1/data/$2/input/$3
+
+results_dir=$1/`date +%j_%H%M`
+
+mkdir -p $results_dir
+
+mv *.csv $results_dir

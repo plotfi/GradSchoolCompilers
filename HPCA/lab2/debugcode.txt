@@ -1,0 +1,142 @@
+if (retired_instruction == 10)
+        {
+            for (list<Op*>::iterator iter = g_rob.begin(); iter != g_rob.end(); iter++)
+            {
+                Op* op = *iter;
+
+                cout << "addr: " << op  << " Opcode: " << (int)op->opcode << " inscheduler: "
+                     << op->in_scheduler << " Isready: " << IsOpReady(op);
+
+                cout << " src_newname[0]: " << op->src_newnames[0]
+                    << " src_newname[1]: " << op->src_newnames[1]
+                    << "reg_map[0]: " << reg_map[op->src[0]].inst_id
+                    << "reg_map[1]: " << reg_map[op->src[1]].inst_id
+                    << " src_rdy_cycles[0]  "  << op->src_rdy_cycles[0]
+                    << " src_rdy_cycles[1]  "  << op->src_rdy_cycles[1];
+
+
+
+                cout << " dst: " << (int)op->dst << " src1: " << (int)op->src[0] << " src2: " << (int)op->src[1];
+
+                cout << "  cycle:      " << cycle_count;
+                cout << "  done cycle: " << op->done_cycle << endl;
+
+
+
+            }
+
+            cout << "g_scheduler" << endl;
+
+            for (list<Op*>::iterator iter = g_scheduler.begin(); iter != g_scheduler.end(); iter++)
+            {
+                Op* op = *iter;
+
+                cout << "addr: " << op << " Opcode:     " << (int)op->opcode << " inscheduler: "
+                     << op->in_scheduler << " Isready: " << IsOpReady(op);
+
+
+                cout << " src_newname[0]: " << op->src_newnames[0]
+                    << " src_newname[1]: " << op->src_newnames[1]
+                    << "reg_map[0]: " << reg_map[op->src[0]].inst_id
+                    << "reg_map[1]: " << reg_map[op->src[1]].inst_id
+                    << " src_rdy_cycles[0]  "  << op->src_rdy_cycles[0]
+                    << " src_rdy_cycles[1]  "  << op->src_rdy_cycles[1];
+
+
+
+                cout << " dst: " << (int)op->dst << " src1: " << (int)op->src[0] << " src2: " << (int)op->src[1];
+
+                cout << "  cycle:      " << cycle_count;
+                cout << "  done cycle: " << op->done_cycle << endl;
+
+            }
+
+          // exit(0);
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+cout << "g_scheduler size: " << g_scheduler.size() << "\n";
+        for (list<Op*>::iterator iter = g_scheduler.begin(); iter != g_scheduler.end(); iter++) cout << *iter << endl;
+
+        cout << "g_rob size: "       << g_rob.size()       << "\n";
+        for (list<Op*>::iterator iter = g_rob.begin(); iter != g_rob.end(); iter++) cout << *iter << endl;
+
+        cout << "g_functional_units size: " << g_functional_units.size() << "\n";
+        for (list<Op*>::iterator iter = g_functional_units.begin(); iter != g_functional_units.end(); iter++) cout << *iter << endl;
+
+        cout << "FE_latch size: " << FE_latch.size() << "\n";
+        for (list<Op*>::iterator iter = FE_latch.begin(); iter != FE_latch.end(); iter++) cout << *iter << endl;
+
+
+        if (g_scheduler.size() >= KNOB_SCHED_SIZE.Value()  &&
+            g_rob.size()       >= KNOB_ROB_SIZE.Value()    &&
+            FE_latch.size()    >= KNOB_ISSUE_WIDTH.Value() &&
+            (g_functional_units.size() >= KNOB_ISSUE_WIDTH.Value() ||
+            g_functional_units.size() == 0))
+        {
+
+            cout << "g_rob" << endl;
+
+
+            for (list<Op*>::iterator iter = g_rob.begin(); iter != g_rob.end(); iter++)
+            {
+                Op* op = *iter;
+
+                cout << "addr: " << op  << " Opcode: " << (int)op->opcode << " inscheduler: "
+                     << op->in_scheduler << " Isready: " << IsOpReady(op);
+
+                cout << " src_newname[0]: " << op->src_newnames[0]
+                    << " src_newname[1]: " << op->src_newnames[1]
+                    << "reg_map[0]: " << reg_map[op->src[0]].inst_id
+                    << "reg_map[1]: " << reg_map[op->src[1]].inst_id
+                    << " src_rdy_cycles[0]  "  << op->src_rdy_cycles[0]
+                    << " src_rdy_cycles[1]  "  << op->src_rdy_cycles[1];
+
+
+
+                cout << " dst: " << (int)op->dst << " src1: " << (int)op->src[0] << " src2: " << (int)op->src[1];
+
+                cout << "  cycle:      " << cycle_count;
+                cout << "  done cycle: " << op->done_cycle << endl;
+
+
+
+            }
+
+            cout << "g_scheduler" << endl;
+
+            for (list<Op*>::iterator iter = g_scheduler.begin(); iter != g_scheduler.end(); iter++)
+            {
+                Op* op = *iter;
+
+                cout << "addr: " << op << " Opcode:     " << (int)op->opcode << " inscheduler: "
+                     << op->in_scheduler << " Isready: " << IsOpReady(op);
+
+
+                cout << " src_newname[0]: " << op->src_newnames[0]
+                    << " src_newname[1]: " << op->src_newnames[1]
+                    << "reg_map[0]: " << reg_map[op->src[0]].inst_id
+                    << "reg_map[1]: " << reg_map[op->src[1]].inst_id
+                    << " src_rdy_cycles[0]  "  << op->src_rdy_cycles[0]
+                    << " src_rdy_cycles[1]  "  << op->src_rdy_cycles[1];
+
+
+
+                cout << " dst: " << (int)op->dst << " src1: " << (int)op->src[0] << " src2: " << (int)op->src[1];
+
+                cout << "  cycle:      " << cycle_count;
+                cout << "  done cycle: " << op->done_cycle << endl;
+
+            }
+
+        }

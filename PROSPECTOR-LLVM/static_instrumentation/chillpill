@@ -1,0 +1,53 @@
+#!/bin/bash -x
+#
+# The Prospector Instrumentor Linker for LLVM.
+# aka PILL
+
+######### Setup ENV #########
+
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+    export SO="so"
+    export O=bc
+elif [[ "$unamestr" == 'Darwin' ]]; then
+    export SO="dylib"
+    export O=bc
+fi
+
+if [ "$#" -eq 0 ]
+then
+    echo "usage: chillpill <filename>"
+    exit
+fi
+
+if [ -z "$LLVM_INSTALL_DIR" ]
+then
+    export LLVM_INSTALL_DIR="/opt/llvm-2.8"
+fi
+
+
+######### Build Instrumented Binary #########
+
+## Builds the profiler:
+make -j5 -C dynamic_profiling
+
+## Builds the program to profile:
+llvm-gcc -std=c99 -O0 -g -c -emit-llvm test/$1.c -o $1.$O
+
+## Instruments the program to profile:
+opt -load $LLVM_INSTALL_DIR/lib/libprospector.$SO -loopsimplify -fipp -lipp -mipp < $1.$O > $1.temp.$O && mv $1.temp.$O $1.$O
+
+# Reoptimizes the instrumented bits:
+# opt -inline -O3 < $1.$O > $1.temp.$O && mv $1.temp.$O $1.$O
+
+# Links the instrumented program with the profiler:
+llvm-link $1.$O dynamic_profiling/Release+Debug/*.$O -o $1.temp.$O && mv $1.temp.$O $1.$O
+
+# Compiles the IR to ASM and Assembles:
+llc $1.$O -o $1.s
+g++ $1.s  -o $1.exe
+
+# Debugging Run:
+llvm-dis -f $1.$O
+gdb $1.exe
+
